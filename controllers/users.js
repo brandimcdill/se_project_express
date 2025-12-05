@@ -4,9 +4,7 @@ const User = require("../models/user");
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch((e) => {
-      return res.status(500).send({ message: "Failed to getUsers", e });
-    });
+    .catch((e) => res.status(500).send({ message: "Failed to getUsers", e }));
 };
 
 const createUser = (req, res) => {
