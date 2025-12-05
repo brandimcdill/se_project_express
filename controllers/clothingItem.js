@@ -14,7 +14,7 @@ const createItem = (req, res) => {
       res.send({ data: item });
     })
     .catch((e) => {
-      res.status(500).send({ message: "Error from createItem", e });
+      res.status(400).send({ message: "Error from createItem", e });
     });
 };
 
@@ -31,10 +31,15 @@ const updateItem = (req, res) => {
   const { imageUrl } = req.body;
 
   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail()
+    .orFail(() => {
+      const error = new Error("Item ID not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then((item) => res.status(200).send({ data: item }))
+
     .catch((e) => {
-      res.status(500).send({ message: "Error from updateItem", e });
+      res.status(400).send({ message: "Error from updateItem", e });
     });
 };
 
@@ -46,7 +51,7 @@ const deleteItem = (req, res) => {
     .orFail()
     .then((item) => res.status(204).send({ data: item }))
     .catch((e) => {
-      res.status(500).send({ message: "Error from deleteItem", e });
+      res.status(400).send({ message: "Error from deleteItem", e });
     });
 };
 
@@ -59,10 +64,23 @@ const likes = (req, res) => {
     { $addToSet: { likes: like } },
     { new: true }
   )
-    .orFail()
+    .orFail(() => {
+      const error = new Error("Likes an item with an incorrect _id");
+      error.statusCode = 400;
+      throw error;
+    })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
-      res.status(500).send({ message: "Error from likes", e });
+      if (e.name === "ItemNotFoundError") {
+        return res
+          .status(404)
+          .send({ message: "Likes an item with an nonexistent _id" });
+      }
+      if (e.name === "ItemInvalidIdError") {
+        return res
+          .status(400)
+          .send({ message: "Likes an item with an incorrect_id" });
+      }
     });
 };
 
@@ -78,7 +96,7 @@ const updateLikes = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
-      res.status(500).send({ message: "Error from updateLikes", e });
+      res.status(400).send({ message: "Error from updateLikes", e });
     });
 };
 module.exports = {

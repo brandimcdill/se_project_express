@@ -10,7 +10,7 @@ const getUsers = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar } = req.body;
   User.create({ name, avatar })
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(200).send(user))
     .catch((e) => {
       if (e.name === "ValidationError") {
         return res.status(400).send({ message: "Validation error." });
@@ -22,16 +22,21 @@ const createUser = (req, res) => {
 const getUserById = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
+    .orFail(() => {
+      const error = new Error("UserID not found");
+      error.statusCode = 404;
+      throw error;
+    })
     .then((user) => res.status(200).send(user))
-    .orFail()
+
     .catch((e) => {
       if (e.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: "User not found" });
+        return res.status(500).send({ message: "UserId not found" });
       }
       if (e.name === "CastError") {
         return res.status(400).send({ message: "Invalid user ID format" });
       }
-      return res.status(500).send({ message: "Failed to getUserById" });
+      return res.status(404).send({ message: "Failed to getUserById" });
     });
 };
 
