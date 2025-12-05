@@ -5,7 +5,7 @@ const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
     .catch((e) => {
-      return res.status(500).send({ message: "Failed to getUsers" });
+      return res.status(500).send({ message: "Failed to getUsers", e });
     });
 };
 
@@ -29,7 +29,8 @@ const getUserById = (req, res) => {
     .catch((e) => {
       if (e.name === "DocumentNotFoundError") {
         return res.status(404).send({ message: "User not found" });
-      } else if (e.name === "CastError") {
+      }
+      if (e.name === "CastError") {
         return res.status(400).send({ message: "Invalid user ID format" });
       }
       return res.status(500).send({ message: "Failed to getUserById" });
