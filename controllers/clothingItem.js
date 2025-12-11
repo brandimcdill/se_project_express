@@ -51,7 +51,7 @@ const deleteItem = (req, res) => {
         return res.status(404).send({ message: 'Item not found' });
       }
       if (e && e.name === 'CastError') {
-        res.status(400).send({ message: "itemId is invalid", e });
+       return res.status(400).send({ message: "itemId is invalid", e });
       }
       return res.status(500).send({ message: 'Server error', e });
     });
