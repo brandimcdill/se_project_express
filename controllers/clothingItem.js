@@ -31,11 +31,7 @@ const updateItem = (req, res) => {
   const { imageUrl } = req.body;
 
   ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.statusCode = 404;
-      throw error;
-    })
+    .orFail()
     .then((item) => res.status(200).send({ data: item }))
 
     .catch((e) => {
@@ -49,54 +45,67 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then((item) => res.status(204).send({ data: item }))
+    .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
-      res.status(400).send({ message: "Error from deleteItem", e });
+      if (e && (e.statusCode === 404 || e.name === 'DocumentNotFoundError')) {
+        return res.status(404).send({ message: 'Item not found' });
+      }
+      if (e && e.name === 'CastError') {
+        res.status(400).send({ message: "itemId is invalid", e });
+      }
+      return res.status(500).send({ message: 'Server error', e });
     });
-};
+  };
 
 const likes = (req, res) => {
   const { itemId } = req.params;
-  const { like } = req.body;
+  const userId = req.user && req.user._id;
 
   ClothingItem.findByIdAndUpdate(
     itemId,
-    { $addToSet: { likes: like } },
+    { $addToSet: { likes: userId } },
     { new: true }
   )
     .orFail(() => {
-      const error = new Error("Likes an item with an incorrect _id");
-      error.statusCode = 400;
+      const error = new Error("Item not found");
+      error.statusCode = 404;
       throw error;
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
-      if (e.name === "ItemNotFoundError") {
-        return res
-          .status(404)
-          .send({ message: "Likes an item with an nonexistent _id" });
+      if (e && (e.statusCode === 404 || e.name === 'DocumentNotFoundError')) {
+        return res.status(404).send({ message: 'Item not found' });
       }
-      if (e.name === "ItemInvalidIdError") {
-        return res
-          .status(400)
-          .send({ message: "Likes an item with an incorrect_id" });
+      if (e && e.name === 'CastError') {
+        return res.status(400).send({ message: 'Invalid item id' });
       }
+      return res.status(500).send({ message: 'Server error', e });
     });
 };
 
-const updateLikes = (req, res) => {
+const removeLikes = (req, res) => {
   const { itemId } = req.params;
-  const { like } = req.body;
+  const userId = req.user && req.user._id;
 
   ClothingItem.findByIdAndUpdate(
     itemId,
-    { $pull: { likes: like } },
+    { $pull: { likes: userId } },
     { new: true }
   )
-    .orFail()
+    .orFail(() => {
+      const error = new Error('Item not found');
+      error.statusCode = 404;
+      throw error;
+    })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
-      res.status(400).send({ message: "Error from updateLikes", e });
+      if (e && (e.statusCode === 404 || e.name === 'DocumentNotFoundError')) {
+        return res.status(404).send({ message: 'Item not found' });
+      }
+      if (e && e.name === 'CastError') {
+        return res.status(400).send({ message: 'Invalid item id' });
+      }
+      return res.status(500).send({ message: 'Server error', e });
     });
 };
 module.exports = {
@@ -105,5 +114,5 @@ module.exports = {
   updateItem,
   deleteItem,
   likes,
-  updateLikes,
+  removeLikes,
 };
