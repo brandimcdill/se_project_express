@@ -1,4 +1,5 @@
 const ClothingItem = require("../models/clothingItem");
+const { error } = require("../utils/error");
 
 const createItem = (req, res) => {
   console.log(req);
@@ -14,7 +15,7 @@ const createItem = (req, res) => {
       res.send({ data: item });
     })
     .catch((e) => {
-      res.status(400).send({ message: "Error from createItem", e });
+      return res.status(400).send({ message: "Error from createItem", e });
     });
 };
 
@@ -26,32 +27,24 @@ const getItems = (req, res) => {
     });
 };
 
-const updateItem = (req, res) => {
-  const { itemId } = req.params;
-  const { imageUrl } = req.body;
-
-  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
-    .orFail()
-    .then((item) => res.status(200).send({ data: item }))
-
-    .catch((e) => {
-      res.status(400).send({ message: "Error from updateItem", e });
-    });
-};
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
-    .orFail()
+    .orFail(() => {
+      const err = new Error(error[3].message);
+      err.statusCode = error[3].statusCode;
+      throw err;
+    })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
       if (e && (e.statusCode === 404 || e.name === 'DocumentNotFoundError')) {
         return res.status(404).send({ message: 'Item not found' });
       }
       if (e && e.name === 'CastError') {
-       return res.status(400).send({ message: "itemId is invalid", e });
+       return res.status(400).send({ message: "BAD_REQUEST", e });
       }
       return res.status(500).send({ message: 'Server error', e });
     });
@@ -67,9 +60,9 @@ const likes = (req, res) => {
     { new: true }
   )
     .orFail(() => {
-      const error = new Error("Item not found");
-      error.statusCode = 404;
-      throw error;
+      const err = new Error(error[3].message);
+      err.statusCode = error[3].statusCode;
+      throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
@@ -93,9 +86,9 @@ const removeLikes = (req, res) => {
     { new: true }
   )
     .orFail(() => {
-      const error = new Error('Item not found');
-      error.statusCode = 404;
-      throw error;
+      const err = new Error(error[3].message);
+      err.statusCode = error[3].statusCode;
+      throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
@@ -111,7 +104,6 @@ const removeLikes = (req, res) => {
 module.exports = {
   createItem,
   getItems,
-  updateItem,
   deleteItem,
   likes,
   removeLikes,

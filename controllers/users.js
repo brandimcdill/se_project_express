@@ -1,10 +1,13 @@
 const User = require("../models/user");
-// GET /users
+const { error } = require("../utils/error");
+
 
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.status(200).send(users))
-    .catch((e) => res.status(500).send({ message: "Failed to getUsers", e }));
+    .catch((e) => {
+      return res.status(404).send({ message: "Failed to getUsers", e })
+    })
 };
 
 const createUser = (req, res) => {
@@ -31,12 +34,12 @@ const getUserById = (req, res) => {
 
     .catch((e) => {
       if (e.name === "DocumentNotFoundError") {
-        return res.status(500).send({ message: "UserId not found" });
+        return res.status(404).send({ message: "NOT_FOUND (404)" });
       }
       if (e.name === "CastError") {
-        return res.status(400).send({ message: "Invalid user ID format" });
+        return res.status(400).send({ message: "BAD_REQUEST (400)" });
       }
-      return res.status(404).send({ message: "Failed to getUserById" });
+      return res.status(500).send({ message: "INTERNAL_SERVER_ERROR (500)" });
     });
 };
 

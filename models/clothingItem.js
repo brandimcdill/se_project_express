@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
+
 const clothingSchema = mongoose.Schema({
   name: {
     type: String,
@@ -23,6 +24,7 @@ const clothingSchema = mongoose.Schema({
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
     required: true,
   },
   likes: {
@@ -35,4 +37,4 @@ const clothingSchema = mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("clothingItems", clothingSchema);
+module.exports = mongoose.model("clothingItem", clothingSchema);
