@@ -2,15 +2,7 @@ const User = require("../models/user");
 // Import ERROR_TYPES from your utils
 const { ERROR_TYPES } = require("../utils/error");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((e) => {
-      // Uses 500: INTERNAL_SERVER_ERROR
-      res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-         .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message, e });
-    });
-};
+
 
 const createUser = (req, res) => {
   const { name, avatar } = req.body;
@@ -42,11 +34,11 @@ const getUserById = (req, res) => {
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
       if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: e.message });
+        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
       }
       return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
                 .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
     });
 };
 
-module.exports = { getUsers, createUser, getUserById };
+module.exports = {createUser, getUserById };

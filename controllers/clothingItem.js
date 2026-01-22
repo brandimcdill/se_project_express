@@ -28,7 +28,7 @@ const getItems = (req, res) => {
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
       if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: e.message });
+        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
       }
       return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
                 .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
@@ -51,7 +51,7 @@ const deleteItem = (req, res) => {
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
       if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: e.message });
+        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
       }
       return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
                 .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
@@ -75,7 +75,7 @@ const likes = (req, res) => {
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
       if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: e.message });
+        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
       }
       return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
                 .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
@@ -98,7 +98,7 @@ const removeLikes = (req, res) => {
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
       if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: e.message });
+        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
       }
       return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
                 .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
