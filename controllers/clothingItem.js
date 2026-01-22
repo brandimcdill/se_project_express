@@ -1,25 +1,6 @@
 const ClothingItem = require("../models/clothingItem");
 const { ERROR_TYPES } = require("../utils/error");
 
-// Helper to handle the catch block logic consistently
-const handleControllerError = (res, e) => {
-  // 400: Invalid Data (Length, required fields, etc.)
-  if (e.name === 'ValidationError' || e.name === 'CastError') {
-    return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-              .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-  }
-
-  // 404: Handled by .orFail()
-  if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-    return res.status(e.statusCode).send({ message: e.message });
-  }
-
-  // 500: Everything else
-  const statusCode = e.statusCode || ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode;
-  const message = e.message || ERROR_TYPES.INTERNAL_SERVER_ERROR.message;
-  return res.status(statusCode).send({ message });
-};
-
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
@@ -28,15 +9,30 @@ const createItem = (req, res) => {
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send({ data: item }))
     .catch((e) => {
-      // The helper now knows how to handle "ValidationError"
-      handleControllerError(res, e);
+     if (e.name === "ValidationError") {
+        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
+                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      }
+      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
+                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
     });
 };
 
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send({ data: items }))
-    .catch((e) => handleControllerError(res, e));
+    .catch((e) => {
+      // Handle CastError (invalid ID format) or 404 from orFail()
+      if (e.name === "CastError") {
+        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
+                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      }
+      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
+        return res.status(e.statusCode).send({ message: e.message });
+      }
+      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
+                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    });
 };
 
 const deleteItem = (req, res) => {
@@ -48,22 +44,65 @@ const deleteItem = (req, res) => {
       throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => handleControllerError(res, e));
+    .catch((e) => {
+      // Handle CastError (invalid ID format) or 404 from orFail()
+      if (e.name === "CastError") {
+        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
+                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      }
+      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
+        return res.status(e.statusCode).send({ message: e.message });
+      }
+      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
+                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    });
 };
 
-// Consolidated Like/Dislike logic
-const updateLikes = (req, res, updateQuery) => {
-  ClothingItem.findByIdAndUpdate(req.params.itemId, updateQuery, { new: true })
+// Like/Dislike functionality
+const likes = (req, res) => {
+  const { itemId } = req.params;
+  ClothingItem.findByIdAndUpdate(itemId, { $addToSet: { likes: req.user._id } }, { new: true })
     .orFail(() => {
       const err = new Error(ERROR_TYPES.NOT_FOUND.message);
       err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
       throw err;
     })
     .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => handleControllerError(res, e));
+    .catch((e) => {
+      // Handle CastError (invalid ID format) or 404 from orFail()
+      if (e.name === "CastError") {
+        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
+                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      }
+      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
+        return res.status(e.statusCode).send({ message: e.message });
+      }
+      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
+                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    });
 };
 
-const likes = (req, res) => updateLikes(req, res, { $addToSet: { likes: req.user._id } });
-const removeLikes = (req, res) => updateLikes(req, res, { $pull: { likes: req.user._id } });
+const removeLikes = (req, res) => {
+  const { itemId } = req.params;
+  ClothingItem.findByIdAndUpdate(itemId, { $pull: { likes: req.user._id } }, { new: true })
+    .orFail(() => {
+      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
+      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
+      throw err;
+    })
+    .then((item) => res.status(200).send({ data: item }))
+    .catch((e) => {
+      // Handle CastError (invalid ID format) or 404 from orFail()
+      if (e.name === "CastError") {
+        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
+                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      }
+      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
+        return res.status(e.statusCode).send({ message: e.message });
+      }
+      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
+                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    });
+};
 
 module.exports = { createItem, getItems, deleteItem, likes, removeLikes };
