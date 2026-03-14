@@ -5,17 +5,22 @@ const { ERROR_TYPES } = require("../utils/error");
 
 
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
-  User.create({ name, avatar })
+  const { name, avatar, email, password } = req.body;
+  User.create({ name, avatar, email, password })
     .then((user) => res.status(201).send(user)) // 201 is standard for "Created"
     .catch((e) => {
+      if (e.code === 11000) {
+      return res.status(ERROR_TYPES.DUPLICATE_EMAIL.statusCode)
+                .send({ message: ERROR_TYPES.DUPLICATE_EMAIL.message });
+    }
       if (e.name === "ValidationError") {
         return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
       return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
                 .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
-    });
+    })
+     
 };
 
 const getUserById = (req, res) => {
