@@ -25,3 +25,6 @@ app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
   console.log("Server is running");
 });
+
+app.post('/signin', login);
+app.post('/signup', createUser);
