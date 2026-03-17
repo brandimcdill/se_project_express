@@ -1,17 +1,18 @@
+const user = require("../models/user");
 const User = require("../models/user");
 // Import ERROR_TYPES from your utils
 const { ERROR_TYPES } = require("../utils/error");
-
+const jwt = require('jsonwebtoken');
 
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
   User.create({ name, avatar, email, password })
-    .then((user) => res.status(201).send(user)) // 201 is standard for "Created"
+    .then((user) => res.status(201).send(user))
     .catch((e) => {
       if (e.code === 11000) {
-      return res.status(ERROR_TYPES.DUPLICATE_EMAIL.statusCode)
-                .send({ message: ERROR_TYPES.DUPLICATE_EMAIL.message });
+      return res.status(ERROR_TYPES.DUPLICATE_LOGIN.statusCode)
+                .send({ message: ERROR_TYPES.DUPLICATE_LOGIN.message });
     }
       if (e.name === "ValidationError") {
         return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
@@ -46,4 +47,12 @@ const getUserById = (req, res) => {
     });
 };
 
-module.exports = {createUser, getUserById };
+
+module.exports.login = (req, res) => {
+  const {email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+  .then((user) => {
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d", });
+  })
+}
