@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const routes = require("./routes");
 
 const{createUser, login } = require('./controllers/users');
-const auth = require('./middlewares/auth')
+const auth = require('./middlewares/auth');
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -15,12 +15,6 @@ mongoose
   })
   .catch(console.error);
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: "69334f961ea8827c8436170a", // paste the _id of the test user created in the previous step
-  };
-  next();
-});
 
 app.use(routes);
 
@@ -31,3 +25,5 @@ app.listen(PORT, () => {
 
 app.post('/signin', login);
 app.post('/signup', createUser);
+
+app.use(auth);
