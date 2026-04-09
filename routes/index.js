@@ -1,7 +1,7 @@
 import express from 'express';
-import { ERROR_TYPES } from "../utils/error";
-import usersRouter from "./users";
-import clothingItemRouter from "./clothingItem";
+import { ERROR_TYPES } from "../utils/error.js";
+import usersRouter from "./users.js";
+import clothingItemRouter from "./clothingItem.js";
 
 const router = express.Router();
 

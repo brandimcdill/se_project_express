@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { ERROR_TYPES } from "../utils/error";
-import { JWT_SECRET } from "../utils/config";
+import { ERROR_TYPES } from "../utils/error.js";
+import { JWT_SECRET } from "../utils/config.js";
 
 const handleAuthError = (res) => res
   .status(ERROR_TYPES.UNAUTHORIZED.statusCode)

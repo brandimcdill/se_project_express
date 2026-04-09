@@ -2,11 +2,11 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
 
-import { createUser, login } from './controllers/users';
-import auth from './middlewares/auth';
-import { ERROR_TYPES } from "./utils/error";
-import usersRouter from "./routes/users";
-import clothingItemRouter from "./routes/clothingItem";
+import { createUser, login } from './controllers/users.js';
+import auth from './middlewares/auth.js';
+import { ERROR_TYPES } from "./utils/error.js";
+import usersRouter from "./routes/users.js";
+import clothingItemRouter from "./routes/clothingItem.js";
 
 const app = express();
 app.use(cors());
@@ -20,14 +20,18 @@ mongoose
   })
   .catch(console.error);
 app.use(express.json());
+app.use((req, res, next) => {
+  req.user = {
+    _id: "69334f961ea8827c8436170a", // paste the _id of the test user created in the previous step
+  };
+  next();
+});
 
 // Wrap controllers to ensure errors are passed to error handler
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
 
-app.post('/signin', asyncHandler(login));
-app.post('/signup', asyncHandler(createUser));
+
+app.post('/signin', login);
+app.post('/signup', createUser);
 app.get('/', (req, res) => res.send('Server is running')); // Unprotected root route
 app.use('/users', auth, usersRouter);
 app.use('/items', auth, clothingItemRouter);

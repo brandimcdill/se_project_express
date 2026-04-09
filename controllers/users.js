@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from "../utils/config";
-import User from "../models/user";
-import { ERROR_TYPES } from "../utils/error";
+import { JWT_SECRET } from "../utils/config.js";
+import User from "../models/user.js";
+import { ERROR_TYPES } from "../utils/error.js";
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;

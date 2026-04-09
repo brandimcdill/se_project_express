@@ -1,5 +1,5 @@
-import ClothingItem from "../models/clothingItem";
-import { ERROR_TYPES } from "../utils/error";
+import ClothingItem from "../models/clothingItem.js";
+import { ERROR_TYPES } from "../utils/error.js";
 
 
 const createItem = (req, res) => {
