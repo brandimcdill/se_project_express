@@ -3,8 +3,8 @@ const ERROR_TYPES = {
   UNAUTHORIZED: { statusCode: 401, message: 'Unauthorized access' },
   FORBIDDEN: { statusCode: 403, message: 'Access forbidden' },
   NOT_FOUND: { statusCode: 404, message: 'Resource not found' },
-  DUPLICATE_EMAIL: {statusCode: 409, message: 'Email already in use'},
+  DUPLICATE_LOGIN: {statusCode: 409, message: 'Email or Password already in use'},
   INTERNAL_SERVER_ERROR: { statusCode: 500, message: 'An error has occurred on the server' }
 };
 
-module.exports = { ERROR_TYPES };
+export { ERROR_TYPES };

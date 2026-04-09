@@ -1,24 +1,31 @@
-const { ERROR_TYPES } = require("../utils/error");
-const jwt = require('jsonwebtoken');
+import { ERROR_TYPES } from "../utils/error.js";
+import { JWT_SECRET }  from "../utils/config.js";
+import jwt from 'jsonwebtoken';
 
-module.exports = (req, res, next) => {
+const handleAuthError = (res) => {
+    res
+    .status(ERROR_TYPES.UNAUTHORIZED.statusCode)
+    .send({ message: ERROR_TYPES.UNAUTHORIZED.message });
+};
+
+const extractBearerToken = (header) => {
+    return header.slice(7).trim();
+};
+
+export default (req, res, next) => {
     const { authorization } = req.headers;
 
     if (!authorization || !authorization.startsWith( 'Bearer ')) {
-        return res
-        .status(ERROR_TYPES.UNAUTHORIZED.statusCode)
-        .send({ message: ERROR_TYPES.UNAUTHORIZED.message });
+        return handleAuthError(res);
     }
 
-    const token = authorization.replace("Bearer ", "");
+    const token = extractBearerToken(authorization);
     let payload;
 
     try{
       payload = jwt.verify(token, JWT_SECRET);
     } catch (err) {
-        res
-        .status(ERROR_TYPES.UNAUTHORIZED.statusCode)
-        .send({ message: ERROR_TYPES.UNAUTHORIZED.message })
+        return handleAuthError(res);
     }
     req.user = payload;
     next();

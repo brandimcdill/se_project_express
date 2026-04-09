@@ -1,15 +1,17 @@
-const router = require("express").Router();
-const users = require("./users");
-const clothingItem = require("./clothingItem");
-const { ERROR_TYPES } = require("../utils/error");
+import express from 'express';
+import { ERROR_TYPES } from "./../utils/error.js";
+import usersRouter from "./users.js";
+import clothingItemRouter from "./clothingItem.js";
 
-router.use("/users", users);
+const router = express.Router();
 
-router.use("/items", clothingItem);
+router.use("/users", usersRouter);
+router.use("/items", clothingItemRouter);
 
 router.use((req, res) => {
-  res.status(ERROR_TYPES.NOT_FOUND.statusCode)
-                  .send({ message: ERROR_TYPES.NOT_FOUND.message });
+  res
+    .status(ERROR_TYPES.NOT_FOUND.statusCode)
+    .send({ message: ERROR_TYPES.NOT_FOUND.message });
 });
 
-module.exports = router;
+export default router;

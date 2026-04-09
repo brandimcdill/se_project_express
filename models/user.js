@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
-const bcrypt = require("bcryptjs");
-const { ERROR_TYPES } = require("../utils/error");
+import  mongoose from "mongoose";
+import validator from "validator";
+import bcrypt from "bcryptjs";
+
 
 const userSchema = mongoose.Schema({
   name: {
@@ -22,32 +22,46 @@ const userSchema = mongoose.Schema({
   },
   email: {
       type: String,
-      required: true,
-      unique: true
+      required: [true, "Email is required."],
+      unique: true,
+      validate: {
+        validator(value) {
+          if (!value) return false;
+          return validator.isEmail(value);
+        },
+        message: "You must enter a valid email address",
+      }
     },
   password: {
       type: String,
       required: true,
-      minlength: 8
+      minlength: 8,
+      select: false,
     }
 
 });
 
-userSchema.statics.findUserByCredentials = function findUSerByCredentials (email, password) {
-  return this.findOne({email})
-  .then(user => {
-    //we get the user object if the email and password match
-    if (!user) {
-      return Promise.reject(new Error('Incorrect email or password'));
-    }
-    return bcrypt.compare(password, user.password);
-  })
+userSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  next();
+});
+
+userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
+  return this.findOne({ email }).select('+password')
+    .then(user => {
+      if (!user) {
+        return Promise.reject(new Error('Incorrect email or password'));
+      }
+      return bcrypt.compare(password, user.password);
+    })
     .then((matched) => {
       if (!matched) {
-        return Promis.reject(new Error('Incorrect email or password'));
+        return Promise.reject(new Error('Incorrect email or password'));
       }
-      return user;
-  })
+      return this.findOne({ email });
+    });
 };
 
-module.exports = mongoose.model('user', userSchema);
+export default mongoose.model('user', userSchema);

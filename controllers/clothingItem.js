@@ -1,5 +1,5 @@
-const ClothingItem = require("../models/clothingItem");
-const { ERROR_TYPES } = require("../utils/error");
+import ClothingItem from "../models/clothingItem.js";
+import  { ERROR_TYPES } from "../utils/error.js";
 
 
 const createItem = (req, res) => {
@@ -37,11 +37,19 @@ const getItems = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
-  ClothingItem.findByIdAndDelete(itemId)
+
+  ClothingItem.findById(itemId)
     .orFail(() => {
       const err = new Error(ERROR_TYPES.NOT_FOUND.message);
       err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
       throw err;
+    })
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id.toString()) {
+        return res.status(ERROR_TYPES.FORBIDDEN.statusCode)
+                  .send({ message: ERROR_TYPES.FORBIDDEN.message });
+      }
+      return ClothingItem.findByIdAndDelete(itemId);
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
@@ -105,4 +113,4 @@ const removeLikes = (req, res) => {
     });
 };
 
-module.exports = { createItem, getItems, deleteItem, likes, removeLikes };
+export { createItem, getItems, deleteItem, likes, removeLikes };
