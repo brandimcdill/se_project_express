@@ -6,7 +6,7 @@ import {
   deleteItem,
   likes,
   removeLikes,
-} from "../controllers/clothingItem.js";
+} from "../controllers/clothingItem";
 
 const clothingItemRouter = express.Router();
 // CRUD

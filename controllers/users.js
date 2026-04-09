@@ -1,7 +1,7 @@
-import { JWT_SECRET } from "../utils/config.js";
-import User from "../models/user.js";
-import { ERROR_TYPES } from "../utils/error.js";
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from "../utils/config";
+import User from "../models/user";
+import { ERROR_TYPES } from "../utils/error";
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -13,14 +13,14 @@ const createUser = (req, res, next) => {
   )
     .catch((e) => {
       if (e.code === 11000) {
-      return res.status(ERROR_TYPES.DUPLICATE_LOGIN.statusCode)
-                .send({ message: ERROR_TYPES.DUPLICATE_LOGIN.message });
-    }
+        return res.status(ERROR_TYPES.DUPLICATE_LOGIN.statusCode)
+                  .send({ message: ERROR_TYPES.DUPLICATE_LOGIN.message });
+      }
       if (e.name === "ValidationError") {
         return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
-      next(e);
+      return next(e);
     })
      
 };
@@ -72,7 +72,7 @@ const updateUser = (req, res) => {
     });
 };
 
-const login = (req, res, next) => {
+const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -86,7 +86,7 @@ const login = (req, res, next) => {
 
     res.send({token});
   })
-  .catch((err) =>{
+  .catch(() => {
     res
     .status(ERROR_TYPES.UNAUTHORIZED.statusCode)
     .send({message: ERROR_TYPES.UNAUTHORIZED.message});
