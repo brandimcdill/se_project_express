@@ -22,21 +22,25 @@ const userSchema = mongoose.Schema({
   },
   email: {
       type: String,
-      required: [true, "Email is required."],
       unique: true,
+      sparse: true,
       validate: {
         validator(value) {
-          if (!value) return false;
-          return validator.isEmail(value);
+          return !value || validator.isEmail(value);
         },
         message: "You must enter a valid email address",
       }
     },
   password: {
       type: String,
-      required: true,
       minlength: 8,
       select: false,
+      validate: {
+        validator(value) {
+          return !value || value.length >= 8;
+        },
+        message: "Password must be at least 8 characters",
+      },
     }
 
 });

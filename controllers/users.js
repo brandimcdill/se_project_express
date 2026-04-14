@@ -5,12 +5,29 @@ import { ERROR_TYPES } from "../utils/error.js";
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
-  User.create({ name, avatar, email, password })
-    .then((user) => 
-      res
-    .status(201)
-    .send({ _id: user._id, name: user.name, avatar: user.avatar, email: user.email })
-  )
+  const userData = { name, avatar };
+
+  if (email) {
+    userData.email = email;
+  }
+  if (password) {
+    userData.password = password;
+  }
+
+  User.create(userData)
+    .then((user) => {
+      const response = {
+        _id: user._id,
+        name: user.name,
+        avatar: user.avatar,
+      };
+
+      if (user.email) {
+        response.email = user.email;
+      }
+
+      return res.status(201).send(response);
+    })
     .catch((e) => {
       if (e.code === 11000) {
         return res.status(ERROR_TYPES.DUPLICATE_LOGIN.statusCode)
@@ -21,8 +38,14 @@ const createUser = (req, res, next) => {
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
       }
       return next(e);
-    })
-     
+    });
+};
+
+const getUsers = (req, res) => {
+  User.find({})
+    .then((users) => res.status(200).send(users))
+    .catch(() => res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
+      .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message }));
 };
 
 const getCurrentUser = (req, res) => {
@@ -36,6 +59,29 @@ const getCurrentUser = (req, res) => {
     .then((user) => res.status(200).send(user))
     .catch((e) => {
       // Handle CastError (invalid ID format) or 404 from orFail()
+      if (e.name === "CastError") {
+        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
+                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      }
+      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
+        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
+      }
+      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
+                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    });
+};
+
+const getUserById = (req, res) => {
+  const { userId } = req.params;
+
+  User.findById(userId)
+    .orFail(() => {
+      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
+      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
+      throw err;
+    })
+    .then((user) => res.status(200).send(user))
+    .catch((e) => {
       if (e.name === "CastError") {
         return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
@@ -93,4 +139,4 @@ const login = (req, res) => {
   });
 };
 
-export { createUser, getCurrentUser, updateUser, login };
+export { createUser, getUsers, getCurrentUser, getUserById, updateUser, login };

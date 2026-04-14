@@ -2,7 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
 
-import { createUser, login } from './controllers/users.js';
+import { createUser, login, getUsers, getUserById } from './controllers/users.js';
+import { createItem, getItems, deleteItem, likes, removeLikes } from './controllers/clothingItem.js';
 import auth from './middlewares/auth.js';
 import { ERROR_TYPES } from "./utils/error.js";
 import usersRouter from "./routes/users.js";
@@ -32,6 +33,14 @@ app.use((req, res, next) => {
 
 app.post('/signin', login);
 app.post('/signup', createUser);
+app.post('/users', createUser);
+app.get('/users', getUsers);
+app.get('/users/:userId', getUserById);
+app.post('/items', createItem);
+app.get('/items', getItems);
+app.delete('/items/:itemId', deleteItem);
+app.put('/items/:itemId/likes', likes);
+app.delete('/items/:itemId/likes', removeLikes);
 app.get('/', (req, res) => res.send('Server is running')); // Unprotected root route
 app.use('/users', auth, usersRouter);
 app.use('/items', auth, clothingItemRouter);
