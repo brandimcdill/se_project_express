@@ -20,7 +20,7 @@ const createItem = (req, res) => {
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send({ data: items }))
+    .then((items) => res.status(200).send(items))
     .catch((e) => {
       // Handle CastError (invalid ID format) or 404 from orFail()
       if (e.name === "CastError") {

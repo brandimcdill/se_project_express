@@ -22,17 +22,22 @@ const userSchema = mongoose.Schema({
   },
   email: {
       type: String,
+      required: [true, "Email is required."],
       unique: true,
       sparse: true,
+      lowercase: true,
+      trim: true,
       validate: {
         validator(value) {
-          return !value || validator.isEmail(value);
+          if (!value) return false;
+          return validator.isEmail(value);
         },
         message: "You must enter a valid email address",
       }
     },
   password: {
       type: String,
+      required: true,
       minlength: 8,
       select: false,
       validate: {
@@ -54,7 +59,7 @@ userSchema.pre('save', async function hashPassword(next) {
 
 userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
   const User = this;
-  return User.findOne({ email }).select('+password')
+  return User.findOne({ email: email.toLowerCase()}).select('+password')
     .then(user => {
       if (!user) {
         return Promise.reject(new Error('Incorrect email or password'));
