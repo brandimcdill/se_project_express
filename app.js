@@ -8,7 +8,6 @@ import auth from './middlewares/auth.js';
 import { ERROR_TYPES } from "./utils/error.js";
 import usersRouter from "./routes/users.js";
 import clothingItemRouter from "./routes/clothingItem.js";
-import User from './models/user.js';
 
 const app = express();
 app.use(cors());
@@ -17,6 +16,7 @@ const { PORT = 3001 } = process.env;
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
+    // eslint-disable-next-line no-console
     console.log("Connected to DB");
   })
   .catch(console.error);
@@ -35,6 +35,7 @@ app.use('/items',  clothingItemRouter);
 
 
 // Global error handler middleware (MUST be before catch-all)
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   // Handle duplicate key error (code 11000)
   if (err.code === 11000 || (err.keyPattern && err.keyPattern.email)) {

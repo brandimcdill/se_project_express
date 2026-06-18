@@ -12,10 +12,13 @@ const createUser = (req, res, next) => {
   }
 
   // Check for duplicate email before creating
-  User.findOne({ email: email.toLowerCase() })
+  return User.findOne({ email: email.toLowerCase() })
     .then((existingUser) => {
       if (existingUser) {
-        throw { code: 11000, keyPattern: { email: 1 } };
+        const err = new Error(ERROR_TYPES.DUPLICATE_LOGIN.message);
+        err.code = 11000;
+        err.keyPattern = { email: 1 };
+        throw err;
       }
       // Email doesn't exist, proceed with creation
       return User.create(userData);
@@ -46,7 +49,7 @@ const createUser = (req, res, next) => {
 
 const getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(200).send({message: "OK"}))
+    .then(() => res.status(200).send({message: "OK"}))
     .catch(() => res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
       .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message }));
 };
@@ -135,10 +138,8 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
       return res.status(200).send({ token });
     })
-    .catch(() => {
-      return res.status(ERROR_TYPES.UNAUTHORIZED.statusCode)
-                .send({ message: ERROR_TYPES.UNAUTHORIZED.message });
-    });
+    .catch(() => res.status(ERROR_TYPES.UNAUTHORIZED.statusCode)
+                .send({ message: ERROR_TYPES.UNAUTHORIZED.message }));
 };
 
 export { createUser, getUsers, getCurrentUser, getUserById, updateUser, login };

@@ -10,8 +10,7 @@ const extractBearerToken = (header) => header.slice(7).trim();
 
 export default (req, res, next) => {
     const { authorization } = req.headers;
-    console.log('Authorization header:', authorization);
-console.log('Full headers:', req.headers);
+    
 
     if (!authorization || !authorization.startsWith( 'Bearer ')) {
         return handleAuthError(res);
@@ -26,7 +25,6 @@ console.log('Full headers:', req.headers);
         return handleAuthError(res);
     }
     req.user = { _id: payload._id };
-    console.log('Decoded payload:', payload);
-console.log('Setting req.user._id to:', payload._id);
+   
     return next();
 };
