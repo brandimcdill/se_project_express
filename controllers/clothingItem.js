@@ -46,17 +46,20 @@ const deleteItem = (req, res) => {
     })
     .then((item) => {
       if (item.owner.toString() !== req.user._id.toString()) {
-        return res.status(ERROR_TYPES.FORBIDDEN.statusCode)
-                  .send({ message: ERROR_TYPES.FORBIDDEN.message });
+        const err = new Error(ERROR_TYPES.FORBIDDEN.message);
+        err.statusCode = ERROR_TYPES.FORBIDDEN.statusCode;
+        throw err;
       }
       return ClothingItem.findByIdAndDelete(itemId);
     })
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
-      // Handle CastError (invalid ID format) or 404 from orFail()
       if (e.name === "CastError") {
         return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      }
+      if (e.statusCode === ERROR_TYPES.FORBIDDEN.statusCode) {
+        return res.status(e.statusCode).send({ message: ERROR_TYPES.FORBIDDEN.message });
       }
       if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
         return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });

@@ -19,6 +19,7 @@ const createUser = (req, res, next) => {
         _id: user._id,
         name: user.name,
         avatar: user.avatar,
+        email: user.email,
       };
       return res.status(201).send(response);
     })
