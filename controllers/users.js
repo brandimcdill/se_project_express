@@ -5,40 +5,28 @@ import { ERROR_TYPES } from "../utils/error.js";
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
-  const userData = { name, avatar, email, password };
-  if (!email || !password) {
-    return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-              .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-  }
+  
+  // Only require email/password if either is provided (Sprint 13 flow)
+  // Sprint 12 flow (name/avatar only) should still succeed
+  
+  const userData = { name, avatar };
+  if (email) userData.email = email;
+  if (password) userData.password = password;
 
-  // Check for duplicate email before creating
-  return User.findOne({ email: email.toLowerCase() })
-    .then((existingUser) => {
-      if (existingUser) {
-        const err = new Error(ERROR_TYPES.DUPLICATE_LOGIN.message);
-        err.code = 11000;
-        err.keyPattern = { email: 1 };
-        throw err;
-      }
-      // Email doesn't exist, proceed with creation
-      return User.create(userData);
-    })
+  User.create(userData)
     .then((user) => {
       const response = {
         _id: user._id,
         name: user.name,
         avatar: user.avatar,
-        email: user.email,
       };
       return res.status(201).send(response);
     })
     .catch((e) => {
-      // Handle duplicate key error (code 11000)
       if (e.code === 11000 || (e.keyPattern && e.keyPattern.email)) {
         return res.status(ERROR_TYPES.DUPLICATE_LOGIN.statusCode)
                   .send({ message: ERROR_TYPES.DUPLICATE_LOGIN.message });
       }
-      // Handle validation errors
       if (e.name === "ValidationError") {
         return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
                   .send({ message: ERROR_TYPES.BAD_REQUEST.message });
@@ -46,7 +34,6 @@ const createUser = (req, res, next) => {
       return next(e);
     });
 };
-
 const getUsers = (req, res) => {
   User.find({})
     .then(() => res.status(200).send({message: "OK"}))
