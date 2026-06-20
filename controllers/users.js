@@ -125,8 +125,11 @@ const login = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
       return res.status(200).send({ token });
     })
-    .catch(() => res.status(ERROR_TYPES.UNAUTHORIZED.statusCode)
-                .send({ message: ERROR_TYPES.UNAUTHORIZED.message }));
+    .catch((err) => {
+  console.error('LOGIN ERROR:', err.message);
+  return res.status(ERROR_TYPES.UNAUTHORIZED.statusCode)
+            .send({ message: ERROR_TYPES.UNAUTHORIZED.message });
+    });
 };
 
 export { createUser, getUsers, getCurrentUser, getUserById, updateUser, login };
