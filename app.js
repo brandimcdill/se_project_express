@@ -27,11 +27,13 @@ app.use(express.json());
 
 app.post('/signin', login);
 app.post('/signup', createUser);
+
+app.use(auth);
 app.post('/users', createUser);
 app.get('/users/:id', getUserById);
 
 
-app.use(auth);
+
 
 app.use('/users',  usersRouter);
 app.use('/items',  clothingItemRouter);
