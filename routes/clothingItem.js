@@ -1,6 +1,7 @@
 import express from 'express';
 
 import {
+  createItem,
   getItems,
   likes,
   deleteItem,
@@ -9,7 +10,10 @@ import {
 
 const clothingItemRouter = express.Router();
 
-clothingItemRouter.get('/', getItems);
+
+clothingItemRouter.post('/', createItem);
+
+
 
 
 // Delete
