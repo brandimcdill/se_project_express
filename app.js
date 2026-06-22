@@ -4,7 +4,7 @@ import cors from 'cors';
 
 
 import router from "./routes/index.js";
-import auth from './middlewares/auth.js';
+
 import { ERROR_TYPES } from "./utils/error.js";
 
 
@@ -26,7 +26,7 @@ app.use(express.json());
 
 
 app.use(router);
-app.use(auth);
+
 
 
 
@@ -57,12 +57,7 @@ app.use((err, req, res, next) => {
             .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
 });
 
-// Catch-all for undefined routes (MUST be last)
-app.use((req, res) => {
-  res
-    .status(ERROR_TYPES.NOT_FOUND.statusCode)
-    .send({ message: ERROR_TYPES.NOT_FOUND.message });
-});
+
 
 
 

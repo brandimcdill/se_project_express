@@ -6,6 +6,6 @@ const usersRouter = express.Router();
 usersRouter.get("/me", getCurrentUser);
 
 usersRouter.patch("/me", updateUser);
-usersRouter.patch("/updateUser", updateUser);
+
 
 export default usersRouter;
