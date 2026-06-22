@@ -2,12 +2,11 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
 
-import { createUser, login} from './controllers/users.js';
 
+import router from "./routes/index.js";
 import auth from './middlewares/auth.js';
 import { ERROR_TYPES } from "./utils/error.js";
-import usersRouter from "./routes/users.js";
-import clothingItemRouter from "./routes/clothingItem.js";
+
 
 const app = express();
 app.use(cors());
@@ -25,17 +24,15 @@ app.use(express.json());
 
 // Wrap controllers to ensure errors are passed to error handler
 
-app.post('/signin', login);
-app.post('/signup', createUser);
 
+app.use(router);
 app.use(auth);
 
 
 
 
 
-app.use('/users',  usersRouter);
-app.use('/items',  clothingItemRouter);
+
 
 
 // Global error handler middleware (MUST be before catch-all)
