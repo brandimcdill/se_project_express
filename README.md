@@ -25,10 +25,17 @@ The backend manages a collection of clothing items categorized by weather condit
 - **Middleware Patterns** - Express middleware for request processing and error handling
 - **MongoDB Operations** - Document creation, querying, updating, and deletion
 - **Async/Promise Handling** - Promise chains for database operations
-## Running the Project
-`npm run start` — to launch the server 
+## Running the Project Locally
 
-`npm run dev` — to launch the server with the hot reload feature
+This backend prioject runs on **localhost:3001** and is designed to operate with the frontend React application (**localhost:3000**).
+
+### Installation & Launch Steps:
+1. Open a terminal window and navigate to this backend project directory.
+2. Run `npm install` to installl all necessary project dependencies.
+3. Choose one of the commands below to launch your local server environment:
+    - `npm run dev` — to launch the server with the hot-reload feature enabled (Recommended for local evaluation).
+
+    - `npm run start` — to launch the standard production server environment. 
 
 
 ### Testing
