@@ -44,4 +44,4 @@ Before committing your code, make sure you edit the file `sprint.txt` in the roo
  ## Project Pitch Video
  
  Check out [this video](https://drive.google.com/drive/folders/1yoNdg3thMS1M1sMW9E5bBQGRT9Jm9rGa?usp=drive_link), where I describe my 
- project and some challenges I faced while building it.
+ project and some challenges I faced while building it. 
