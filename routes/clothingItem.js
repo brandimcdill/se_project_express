@@ -8,20 +8,21 @@ import {
 } from "../controllers/clothingItem.js";
 
 const clothingItemRouter = express.Router();
+import { validateCardBody, validateId } from '../middlewares/validation.js';
 
 
-clothingItemRouter.post('/', createItem);
+clothingItemRouter.post('/', validateCardBody, createItem);
 
 
 
 
 // Delete
-clothingItemRouter.delete("/:itemId", deleteItem);
+clothingItemRouter.delete("/:itemId", validateId, deleteItem);
 
 // Likes
-clothingItemRouter.put('/:itemId/likes', likes);
+clothingItemRouter.put('/:itemId/likes', validateId, likes);
 
 // Remove Likes
-clothingItemRouter.delete("/:itemId/likes", removeLikes);
+clothingItemRouter.delete("/:itemId/likes", validateId, removeLikes);
 
 export default clothingItemRouter;

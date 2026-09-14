@@ -20,6 +20,7 @@ module.exports = {
     sourceType: "module",
   },
   rules: {
+    "no-unused-vars": ["error", { "argsIgnorePatter": "next" }],
     "no-console": ["warn", { allow: ["error"] }],
     "no-underscore-dangle": ["error", { allow: ["_id"] }],
     "import/extensions": [

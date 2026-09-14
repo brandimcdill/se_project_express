@@ -1,118 +1,102 @@
 import ClothingItem from "../models/clothingItem.js";
-import { ERROR_TYPES } from "../utils/error.js";
+import NotFoundError from '../errors/NotFoundError.js';
+import BadRequestError from '../errors/BadRequestError.js';
+import ConflictError from '../errors/ConflictError.js';
+import UnauthorizedError from '../errors/UnauthorizedError.js';
+import ForbiddenError from '../errors/ForbiddenError.js';
 
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
   ClothingItem.create({ name, weather, imageUrl, owner })
-    .then((item) => res.status(201).send({ data: item }))
-    .catch((e) => {
-     if (e.name === "ValidationError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+    .then((item) => {
+      if (!item) {
+        throw new BadRequestError("No item found");
       }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
-    });
+      return res.status(201).send({ item })
+  })
+    .catch(next);
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send(items))
-    .catch((e) => {
-      // Handle CastError (invalid ID format) or 404 from orFail()
-      if (e.name === "CastError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+    .then((items) => {
+      if (!items) {
+        throw new NotFoundError("No items found"); 
       }
-      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
-      }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+        return res.status(200).send(items);
+})
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+        return next(new BadRequestError("The id string is in an invalid format"))
+      } else {
+        return next(err);
+      } 
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
 
   ClothingItem.findById(itemId)
-    .orFail(() => {
-      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
-      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
-      throw err;
-    })
     .then((item) => {
+      if (!item) {
+        throw new NotFoundError('Item not found');
+      }
       if (item.owner.toString() !== req.user._id.toString()) {
-        const err = new Error(ERROR_TYPES.FORBIDDEN.message);
-        err.statusCode = ERROR_TYPES.FORBIDDEN.statusCode;
-        throw err;
+        throw new ForbiddenError('Unable to remove an item owned by another user');
       }
-      return ClothingItem.findByIdAndDelete(itemId);
+        return res.status(200).send({ data: item });
     })
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => {
-      if (e.name === "CastError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-      }
-      if (e.statusCode === ERROR_TYPES.FORBIDDEN.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.FORBIDDEN.message });
-      }
-      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
-      }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+        return next(new BadRequestError("The id string is in an invalid format"))
+       } else {
+        return next(err);
+      } 
     });
 };
 
 // Like/Dislike functionality
-const likes = (req, res) => {
+const likes = (req, res, next) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndUpdate(itemId, { $addToSet: { likes: req.user._id } }, { new: true })
-    .orFail(() => {
-      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
-      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
-      throw err;
+    .then((item) => {
+      if (!item) {
+        throw new NotFoundError('Item not found');
+      }
+        return res.status(200).send({ data: item });
     })
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => {
-      // Handle CastError (invalid ID format) or 404 from orFail()
-      if (e.name === "CastError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-      }
-      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
-      }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+         return next(new BadRequestError("The id string is in an invalid format"))
+      } else {
+        return next(err);
+      }   
     });
 };
 
-const removeLikes = (req, res) => {
+const removeLikes = (req, res, next) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndUpdate(itemId, { $pull: { likes: req.user._id } }, { new: true })
-    .orFail(() => {
-      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
-      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
-      throw err;
+    .then((item) => {
+      if (!item) {
+        throw new NotFoundError('Item not found');
+      }
+        return res.status(200).send({ data: item });
     })
-    .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => {
-      // Handle CastError (invalid ID format) or 404 from orFail()
-      if (e.name === "CastError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-      }
-      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
-      }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+         return next(new BadRequestError("The id string is in an invalid format"))
+      } else {
+        return next(err);
+      }   
     });
 };
 

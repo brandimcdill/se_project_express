@@ -1,7 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from "../utils/config.js";
 import User from "../models/user.js";
-import { ERROR_TYPES } from "../utils/error.js";
+import NotFoundError from '../errors/NotFoundError.js';
+import BadRequestError from '../errors/BadRequestError.js';
+import ConflictError from '../errors/ConflictError.js';
+import UnauthorizedError from '../errors/UnauthorizedError.js';
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -23,102 +26,94 @@ const createUser = (req, res, next) => {
       };
       return res.status(201).send(response);
     })
-    .catch((e) => {
-      if (e.code === 11000 || (e.keyPattern && e.keyPattern.email)) {
-        return res.status(ERROR_TYPES.DUPLICATE_LOGIN.statusCode)
-                  .send({ message: ERROR_TYPES.DUPLICATE_LOGIN.message });
+    .catch((err) => {
+      console.error(err);
+      if (err.code === 11000 || (err.keyPattern && err.keyPattern.email)) {
+        return next(new ConflictError("An account with this email already exists"));
       }
-      if (e.name === "ValidationError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+      if (err.name === "ValidationError") {
+      return next(new BadRequestError("Invalid data provided for user creation"));
       }
-      return next(e);
+      return next(err);
     });
 };
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
-    .then(() => res.status(200).send({message: "OK"}))
-    .catch(() => res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-      .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message }));
+    .then((users) => {
+      return res.status(200).send(users)
+    })
+    .catch((err) => {
+      console.error(err);
+      return next(err);
+  });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const  userId  = req.user._id;
 
   User.findById(userId)
-    .orFail(() => {
-      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
-      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
-      throw err;
+    .then((userData) => {
+      if (!userData) {
+        throw new NotFoundError("No user found");
+      }
+       return res.status(200).send(userData);
     })
-    .then((userData) => res.status(200).send(userData))
-    .catch((e) => {
-      // Handle CastError (invalid ID format) or 404 from orFail()
-      if (e.name === "CastError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-      }
-      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
-      }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+        return next(new BadRequestError("The id string is in an invalid format"))
+      } else {
+      return next(err);
+      }  
     });
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .orFail(() => {
-      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
-      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
-      throw err;
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError("No user found with matching ID");
+      }
+      return res.send(user);
     })
-    .then((user) => res.status(200).send(user))
-    .catch((e) => {
-      if (e.name === "CastError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-      }
-      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
-      }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+      return  next(new BadRequestError("The id string is in an invalid format"))
+      } else {
+      return  next(err);
+      }      
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, avatar } = req.body;
   const userId = req.user._id;
 
   User.findByIdAndUpdate(userId, { name, avatar }, { new: true, runValidators: true })
-    .orFail(() => {
-      const err = new Error(ERROR_TYPES.NOT_FOUND.message);
-      err.statusCode = ERROR_TYPES.NOT_FOUND.statusCode;
-      throw err;
+    .then((userData) => {
+      if (!userData) {
+        throw new NotFoundError("No user found with matching ID");
+      }
+      return res.status(200).send(userData);
     })
-    .then((userData) => res.status(200).send(userData))
-    .catch((e) => {
-      if (e.name === "CastError") {
-        return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-                  .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-      }
-      if (e.statusCode === ERROR_TYPES.NOT_FOUND.statusCode) {
-        return res.status(e.statusCode).send({ message: ERROR_TYPES.NOT_FOUND.message });
-      }
-      return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-                .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "CastError") {
+        return next(new BadRequestError("The id string is in an invalid format"))
+      } else {
+      return next(err);
+      }      
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-              .send({ message: ERROR_TYPES.BAD_REQUEST.message });
+    return next(new BadRequestError("Email and password are required"));
   }
 
   return User.findUserByCredentials(email, password)
@@ -128,8 +123,7 @@ const login = (req, res) => {
     })
     .catch((err) => {
   console.error('LOGIN ERROR:', err.message);
-  return res.status(ERROR_TYPES.UNAUTHORIZED.statusCode)
-            .send({ message: ERROR_TYPES.UNAUTHORIZED.message });
+  return next(new UnauthorizedError("Incorrect email or password"));
     });
 };
 

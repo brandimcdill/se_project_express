@@ -1,11 +1,15 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
+import { errors } from 'celebrate';
+import { requestLogger, errorLogger } from './middlewares/logger';
+
 
 
 import router from "./routes/index.js";
 
 import { ERROR_TYPES } from "./utils/error.js";
+const errorHandler = require('./middlewares/error-handler');
 
 
 const app = express();
@@ -24,42 +28,21 @@ app.use(express.json());
 
 // Wrap controllers to ensure errors are passed to error handler
 
-
+app.use(requestLogger);
 app.use(router);
-
-
-
-
-
-
-
+app.use(errorLogger);
+app.use(errors());
 
 
 // Global error handler middleware (MUST be before catch-all)
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  // Handle duplicate key error (code 11000)
-  if (err.code === 11000 || (err.keyPattern && err.keyPattern.email)) {
-    return res.status(ERROR_TYPES.DUPLICATE_LOGIN.statusCode)
-              .send({ message: ERROR_TYPES.DUPLICATE_LOGIN.message });
-  }
-  
-  if (err.name === 'ValidationError') {
-    return res.status(ERROR_TYPES.BAD_REQUEST.statusCode)
-              .send({ message: ERROR_TYPES.BAD_REQUEST.message });
-  }
-  
+  console.error(err);
   if (err.statusCode) {
     return res.status(err.statusCode).send({ message: err.message });
   }
-  
-  return res.status(ERROR_TYPES.INTERNAL_SERVER_ERROR.statusCode)
-            .send({ message: ERROR_TYPES.INTERNAL_SERVER_ERROR.message });
+  return res.status(500).send({ message: "An error has occurred on the server" });
 });
-
-
-
-
 
 
 
