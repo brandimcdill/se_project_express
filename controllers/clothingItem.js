@@ -43,7 +43,13 @@ const deleteItem = (req, res, next) => {
       if (item.owner.toString() !== req.user._id.toString()) {
         throw new ForbiddenError('Unable to remove an item owned by another user');
       }
-        return res.status(200).send({ data: item });
+        return ClothingItem.findByIdAndDelete(itemId);
+    })
+    .then((item) => {
+      if (item) {
+        throw new NotFoundError('Item not found');
+      }
+      return res.status(200).send({ data: item });
     })
     .catch((err) => {
       console.error(err);
