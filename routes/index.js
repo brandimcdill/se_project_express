@@ -4,7 +4,7 @@ import usersRouter from './users.js';
 import clothingItemRouter from "./clothingItem.js";
 import { createUser, login} from '../controllers/users.js';
 import { getItems } from '../controllers/clothingItem.js';
-import { validateUserBody, validateLogin, validateId } from '../middlewares/validation.js';
+import { validateUserBody, validateLogin } from '../middlewares/validation.js';
 import NotFoundError from '../errors/NotFoundError.js';
 
 const router = express.Router();
@@ -18,7 +18,7 @@ router.use(auth);
 router.use("/users", usersRouter);
 router.use("/items", clothingItemRouter);
 
-router.use((req, res, next) => {
+router.use(( _next) => {
   throw new NotFoundError("The requested resource was not found");
 });
 

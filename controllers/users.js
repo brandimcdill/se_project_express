@@ -39,9 +39,7 @@ const createUser = (req, res, next) => {
 };
 const getUsers = (req, res, next) => {
   User.find({})
-    .then((users) => {
-      return res.status(200).send(users)
-    })
+    .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err);
       return next(err);
@@ -62,9 +60,8 @@ const getCurrentUser = (req, res, next) => {
       console.error(err);
       if (err.name === "CastError") {
         return next(new BadRequestError("The id string is in an invalid format"))
-      } else {
+      }
       return next(err);
-      }  
     });
 };
 
@@ -82,9 +79,8 @@ const getUserById = (req, res, next) => {
       console.error(err);
       if (err.name === "CastError") {
       return  next(new BadRequestError("The id string is in an invalid format"))
-      } else {
-      return  next(err);
-      }      
+      }
+      return  next(err);     
     });
 };
 
@@ -103,9 +99,8 @@ const updateUser = (req, res, next) => {
       console.error(err);
       if (err.name === "CastError") {
         return next(new BadRequestError("The id string is in an invalid format"))
-      } else {
-      return next(err);
-      }      
+      }
+      return next(err);      
     });
 };
 

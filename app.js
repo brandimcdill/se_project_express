@@ -2,15 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from 'cors';
 import { errors } from 'celebrate';
-import { requestLogger, errorLogger } from './middlewares/logger';
-
-
-
+import { requestLogger, errorLogger } from './middlewares/logger.js';
 import router from "./routes/index.js";
-
-import { ERROR_TYPES } from "./utils/error.js";
-const errorHandler = require('./middlewares/error-handler');
-
 
 const app = express();
 app.use(cors());
@@ -29,7 +22,15 @@ app.use(express.json());
 // Wrap controllers to ensure errors are passed to error handler
 
 app.use(requestLogger);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Server will crash now');
+  }, 0);
+});
+
 app.use(router);
+
 app.use(errorLogger);
 app.use(errors());
 

@@ -1,8 +1,6 @@
 import ClothingItem from "../models/clothingItem.js";
 import NotFoundError from '../errors/NotFoundError.js';
 import BadRequestError from '../errors/BadRequestError.js';
-import ConflictError from '../errors/ConflictError.js';
-import UnauthorizedError from '../errors/UnauthorizedError.js';
 import ForbiddenError from '../errors/ForbiddenError.js';
 
 
@@ -30,11 +28,7 @@ const getItems = (req, res, next) => {
 })
     .catch((err) => {
       console.error(err);
-      if (err.name === "CastError") {
-        return next(new BadRequestError("The id string is in an invalid format"))
-      } else {
         return next(err);
-      } 
     });
 };
 
@@ -55,9 +49,8 @@ const deleteItem = (req, res, next) => {
       console.error(err);
       if (err.name === "CastError") {
         return next(new BadRequestError("The id string is in an invalid format"))
-       } else {
+       }
         return next(err);
-      } 
     });
 };
 
@@ -75,9 +68,8 @@ const likes = (req, res, next) => {
       console.error(err);
       if (err.name === "CastError") {
          return next(new BadRequestError("The id string is in an invalid format"))
-      } else {
-        return next(err);
-      }   
+      }
+        return next(err);  
     });
 };
 
@@ -94,9 +86,8 @@ const removeLikes = (req, res, next) => {
       console.error(err);
       if (err.name === "CastError") {
          return next(new BadRequestError("The id string is in an invalid format"))
-      } else {
-        return next(err);
-      }   
+      } 
+        return next(err);   
     });
 };
 
