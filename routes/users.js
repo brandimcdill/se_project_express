@@ -1,11 +1,11 @@
 import express from 'express';
 import { getCurrentUser, updateUser } from "../controllers/users.js";
-import { validateUserBody } from '../middlewares/validation.js';
+import { validateUserUpdate } from '../middlewares/validation.js';
 
 const usersRouter = express.Router();
 
 usersRouter.get("/me", getCurrentUser);
-usersRouter.patch("/me", validateUserBody, updateUser);
+usersRouter.patch("/me", validateUserUpdate, updateUser);
 
 
 export default usersRouter;
