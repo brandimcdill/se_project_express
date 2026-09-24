@@ -41,6 +41,16 @@ This backend prioject runs on **localhost:3001** and is designed to operate with
 ### Testing
 Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
 
+
+## Deployed Project Addresses & Code Repositories
+- **Live Production Frontend App URL:** [https://wtwrmcdill.networkguru.com]
+- **Live Production Backend API Base URL:** [https://api.wtwrmcdill.networkguru.com]
+- **Server External Public Static IP:** `34.31.80.252`
+
+### Source Code Repositories
+- **Backend Express GitHub Repository:** [https://github.com/brandimcdill/se_project_express]
+- **Frontend React GitHub Repository:** [https://github.com/brandimcdill/se_project_react]
+
  ## Project Pitch Video
  
  Check out [this video](https://drive.google.com/file/d/1uBxzLoWDBKhweUaUGRbwBHZ2_s1XFZ_C/view?usp=sharing), where I describe my 
