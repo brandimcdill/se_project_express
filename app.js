@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { errors } from 'celebrate';
 import { requestLogger, errorLogger } from './middlewares/logger.js';
 import router from "./routes/index.js";
+import errorHandler from "./middlewares/errorHandler.js";
 
 dotenv.config();
 
@@ -37,14 +38,7 @@ app.use(errorLogger);
 app.use(errors());
 
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  if (err.statusCode) {
-    return res.status(err.statusCode).send({ message: err.message });
-  }
-  return res.status(500).send({ message: "An error has occurred on the server" });
-  next();
-});
+app.use(errorHandler);
 
 
 
