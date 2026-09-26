@@ -17,7 +17,7 @@ export default (req, res, next) => {
     try{
       payload = jwt.verify(token, JWT_SECRET);
     } catch (err) {
-        return handleAuthError(res);
+        return next(new UnauthorizedError('Authorization required'));
     }
     req.user = { _id: payload._id };
    
