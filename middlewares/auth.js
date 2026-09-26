@@ -1,10 +1,14 @@
 import jwt from 'jsonwebtoken';
 import { ERROR_TYPES } from "../utils/error.js";
 import { JWT_SECRET } from "../utils/config.js";
+import UnauthorizedError from '../errors/UnauthorizedError.js';
 
-const handleAuthError = (res) => res
-  .status(ERROR_TYPES.UNAUTHORIZED.statusCode)
-  .send({ message: ERROR_TYPES.UNAUTHORIZED.message });
+const handleAuthError = (res) => {
+  if (!authorization || !authorization.startsWith('Bearer ')){
+    throw new UnauthorizedError('Authorization required');
+  }
+}
+
 
 const extractBearerToken = (header) => header.slice(7).trim();
 

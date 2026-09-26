@@ -117,8 +117,11 @@ const login = (req, res, next) => {
       return res.status(200).send({ token });
     })
     .catch((err) => {
-  console.error('LOGIN ERROR:', err.message);
-  return next(new UnauthorizedError("Incorrect email or password"));
+      console.error(err);
+      if (err.message === "Incorrect email or password") {
+        return next(new UnauthorizedError("Incorrect email or password"));
+      }
+      return next(err);
     });
 };
 

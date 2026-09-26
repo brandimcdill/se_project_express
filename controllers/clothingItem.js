@@ -24,7 +24,7 @@ const getItems = (req, res, next) => {
       if (!items) {
         throw new NotFoundError("No items found"); 
       }
-        return res.status(200).send(items);
+        return res.send(items);
 })
     .catch((err) => {
       console.error(err);
