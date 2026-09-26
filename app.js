@@ -15,11 +15,9 @@ const { PORT = 3001 } = process.env;
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
-  .then(() => {
-    console.log("Connected to DB");
-  })
+  .then(() => {})
   .catch((err) => {
-    console.error("Database connection failure:", err);
+    if (err) return;
   });
 
 app.use(express.json());
@@ -42,8 +40,5 @@ app.use(errorHandler);
 
 
 
-app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`);
-  console.log("Server is running smmothly");
-});
+app.listen(PORT, () => {});
 
